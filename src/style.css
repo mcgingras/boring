@@ -1,0 +1,25 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    height: 400px;
+    overflow: hidden;
+}
+
+.container {
+    position: relative;
+    width: 1280px;
+    height: 400px;
+    margin: 0 auto;
+    background-color: #000000;
+    overflow: hidden;
+}
+
+#overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: sans-serif;
+    z-index: 1;
+}
