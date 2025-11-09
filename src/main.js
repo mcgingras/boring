@@ -32,99 +32,105 @@ stats.dom.style.top = '0px';
 stats.dom.style.left = '0px';
 document.body.appendChild(stats.dom);
 
-// BOILER ROOM LIGHTING - Heavy red atmosphere like the photo
-// Very dim ambient with red tint
-const ambient = new THREE.AmbientLight(0x330000, 0.4);
+// === PERFORMANCE TEST MODE ===
+// Minimal lighting for baseline FPS test
+const ambient = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambient);
-
-// Key red lights (signature Boiler Room look)
 const spotlights = [];
 
-// Main red backlight from ceiling - MUCH BRIGHTER
-const mainRedLight = new THREE.SpotLight(0xff0000, 15, 15, Math.PI / 4, 0.6, 1.5);
-mainRedLight.position.set(0, 4.5, -2);
-const redTarget = new THREE.Object3D();
-redTarget.position.set(0, 1, 1);
-scene.add(redTarget);
-mainRedLight.target = redTarget;
-scene.add(mainRedLight);
-spotlights.push({ light: mainRedLight, target: redTarget, phase: 0 });
+// === BOILER ROOM LIGHTING - COMMENTED OUT FOR TESTING ===
+// // Very dim ambient with red tint
+// const ambient = new THREE.AmbientLight(0x330000, 0.4);
+// scene.add(ambient);
 
-// Side red wash (left) - reduced for performance
-const leftRedLight = new THREE.SpotLight(
-  0xff0000,
-  12,
-  12,
-  Math.PI / 3,
-  0.7,
-  1.5
-);
-leftRedLight.position.set(-4, 3, 0);
-const leftTarget = new THREE.Object3D();
-leftTarget.position.set(0, 1, 1);
-scene.add(leftTarget);
-leftRedLight.target = leftTarget;
-scene.add(leftRedLight);
-spotlights.push({
-  light: leftRedLight,
-  target: leftTarget,
-  phase: Math.PI / 2,
-});
+// // Key red lights (signature Boiler Room look)
+// const spotlights = [];
 
-// Right red wash REMOVED for Pi performance
+// // Main red backlight from ceiling - MUCH BRIGHTER
+// const mainRedLight = new THREE.SpotLight(0xff0000, 15, 15, Math.PI / 4, 0.6, 1.5);
+// mainRedLight.position.set(0, 4.5, -2);
+// const redTarget = new THREE.Object3D();
+// redTarget.position.set(0, 1, 1);
+// scene.add(redTarget);
+// mainRedLight.target = redTarget;
+// scene.add(mainRedLight);
+// spotlights.push({ light: mainRedLight, target: redTarget, phase: 0 });
 
-// White spotlight on DJ booth - like in the photo
-const djSpotlight = new THREE.SpotLight(
-  0xffffff,
-  25,
-  12,
-  Math.PI / 8,
-  0.3,
-  1.5
-);
-djSpotlight.position.set(0, 4.5, 2);
-const djTarget = new THREE.Object3D();
-djTarget.position.set(0, 1, 0); // Aimed at DJ booth
-scene.add(djTarget);
-djSpotlight.target = djTarget;
-scene.add(djSpotlight);
-spotlights.push({
-  light: djSpotlight,
-  target: djTarget,
-  phase: 0,
-});
+// // Side red wash (left) - reduced for performance
+// const leftRedLight = new THREE.SpotLight(
+//   0xff0000,
+//   12,
+//   12,
+//   Math.PI / 3,
+//   0.7,
+//   1.5
+// );
+// leftRedLight.position.set(-4, 3, 0);
+// const leftTarget = new THREE.Object3D();
+// leftTarget.position.set(0, 1, 1);
+// scene.add(leftTarget);
+// leftRedLight.target = leftTarget;
+// scene.add(leftRedLight);
+// spotlights.push({
+//   light: leftRedLight,
+//   target: leftTarget,
+//   phase: Math.PI / 2,
+// });
 
-// No fill light - keep it dark and moody like the photo
+// // White spotlight on DJ booth - like in the photo
+// const djSpotlight = new THREE.SpotLight(
+//   0xffffff,
+//   25,
+//   12,
+//   Math.PI / 8,
+//   0.3,
+//   1.5
+// );
+// djSpotlight.position.set(0, 4.5, 2);
+// const djTarget = new THREE.Object3D();
+// djTarget.position.set(0, 1, 0); // Aimed at DJ booth
+// scene.add(djTarget);
+// djSpotlight.target = djTarget;
+// scene.add(djSpotlight);
+// spotlights.push({
+//   light: djSpotlight,
+//   target: djTarget,
+//   phase: 0,
+// });
 
-// Industrial concrete floor - Boiler Room style
+// === SIMPLE FLOOR FOR TESTING ===
 const floorGeo = new THREE.PlaneGeometry(10, 10);
-const canvas = document.createElement("canvas");
-canvas.width = canvas.height = 128;
-const ctx = canvas.getContext("2d");
-
-// Base concrete gray
-ctx.fillStyle = "#2a2a2a";
-ctx.fillRect(0, 0, 128, 128);
-
-// Add some subtle texture/noise for concrete effect
-for (let i = 0; i < 800; i++) {
-  const x = Math.random() * 128;
-  const y = Math.random() * 128;
-  const shade = Math.random() > 0.5 ? "#333333" : "#252525";
-  ctx.fillStyle = shade;
-  ctx.fillRect(x, y, 2, 2);
-}
-
-const floorTexture = new THREE.CanvasTexture(canvas);
-const floorMat = new THREE.MeshStandardMaterial({
-  map: floorTexture,
-  roughness: 0.9,
-  metalness: 0.1,
-});
+const floorMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
 const floor = new THREE.Mesh(floorGeo, floorMat);
 floor.rotation.x = -Math.PI / 2;
 scene.add(floor);
 
+// === BOILER ROOM FLOOR - COMMENTED OUT FOR TESTING ===
+// const floorGeo = new THREE.PlaneGeometry(10, 10);
+// const canvas = document.createElement("canvas");
+// canvas.width = canvas.height = 128;
+// const ctx = canvas.getContext("2d");
+// ctx.fillStyle = "#2a2a2a";
+// ctx.fillRect(0, 0, 128, 128);
+// for (let i = 0; i < 800; i++) {
+//   const x = Math.random() * 128;
+//   const y = Math.random() * 128;
+//   const shade = Math.random() > 0.5 ? "#333333" : "#252525";
+//   ctx.fillStyle = shade;
+//   ctx.fillRect(x, y, 2, 2);
+// }
+// const floorTexture = new THREE.CanvasTexture(canvas);
+// const floorMat = new THREE.MeshStandardMaterial({
+//   map: floorTexture,
+//   roughness: 0.9,
+//   metalness: 0.1,
+// });
+// const floor = new THREE.Mesh(floorGeo, floorMat);
+// floor.rotation.x = -Math.PI / 2;
+// scene.add(floor);
+
+// === DJ BOOTH, WALLS, LOGO - COMMENTED OUT FOR TESTING ===
+/*
 // DJ BOOTH - Boiler Room style
 const boothWidth = 2;
 const boothHeight = 1;
@@ -346,6 +352,7 @@ ledStripPositions.forEach((xPos) => {
   strip.position.set(xPos, 2.5, -3.95);
   scene.add(strip);
 });
+*/
 
 // Controls - damping disabled for performance
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -355,24 +362,40 @@ controls.enableDamping = false;
 const loader = new GLTFLoader();
 const mixers = [];
 
-// Helper function to setup dancer materials - realistic lighting
+// Helper function to setup dancer materials - PERFORMANCE TEST MODE
 function setupDancerMaterials(model) {
   model.traverse((child) => {
     if (child.isMesh) {
-      // Use MeshStandardMaterial for realistic lighting
+      // Use MeshBasicMaterial for maximum performance
       if (child.material) {
         const oldMaterial = child.material;
-        child.material = new THREE.MeshStandardMaterial({
+        child.material = new THREE.MeshBasicMaterial({
           color: oldMaterial.color || 0xcccccc,
           map: oldMaterial.map,
-          metalness: 0,
-          roughness: 0.8,
           skinning: true,
         });
       }
     }
   });
 }
+
+// === BOILER ROOM MATERIALS - COMMENTED OUT FOR TESTING ===
+// function setupDancerMaterials(model) {
+//   model.traverse((child) => {
+//     if (child.isMesh) {
+//       if (child.material) {
+//         const oldMaterial = child.material;
+//         child.material = new THREE.MeshStandardMaterial({
+//           color: oldMaterial.color || 0xcccccc,
+//           map: oldMaterial.map,
+//           metalness: 0,
+//           roughness: 0.8,
+//           skinning: true,
+//         });
+//       }
+//     }
+//   });
+// }
 
 // BOILER ROOM CROWD - positioned behind DJ booth
 // Helper function to load crowd member
@@ -398,24 +421,26 @@ function loadCrowdMember(modelPath, position, rotation = 0) {
   );
 }
 
-// Crowd arranged in semi-circle behind DJ booth - REDUCED FOR PERFORMANCE
-// Just 4 dancers instead of 8
-loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [-1.2, 0, 2], 0);
-loadCrowdMember("/biped/Animation_Boom_Dance_withSkin.glb", [-0.4, 0, 2], 0);
-loadCrowdMember("/biped/Untitled.glb", [0.4, 0, 2], 0);
-loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [1.2, 0, 2], 0);
+// === PERFORMANCE TEST - SINGLE DANCER ===
+loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [0, 0, 0], 0);
 
-// Music (optional)
-const listener = new THREE.AudioListener();
-camera.add(listener);
-const sound = new THREE.Audio(listener);
-const audioLoader = new THREE.AudioLoader();
-audioLoader.load("/song.mp3", (buffer) => {
-  sound.setBuffer(buffer);
-  sound.setLoop(true);
-  sound.setVolume(0.5);
-  sound.play();
-});
+// === CROWD - COMMENTED OUT FOR TESTING ===
+// loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [-1.2, 0, 2], 0);
+// loadCrowdMember("/biped/Animation_Boom_Dance_withSkin.glb", [-0.4, 0, 2], 0);
+// loadCrowdMember("/biped/Untitled.glb", [0.4, 0, 2], 0);
+// loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [1.2, 0, 2], 0);
+
+// === MUSIC - COMMENTED OUT FOR TESTING ===
+// const listener = new THREE.AudioListener();
+// camera.add(listener);
+// const sound = new THREE.Audio(listener);
+// const audioLoader = new THREE.AudioLoader();
+// audioLoader.load("/song.mp3", (buffer) => {
+//   sound.setBuffer(buffer);
+//   sound.setLoop(true);
+//   sound.setVolume(0.5);
+//   sound.play();
+// });
 
 // Animation loop
 const clock = new THREE.Clock();
