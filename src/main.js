@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import Stats from "three/examples/jsm/libs/stats.module.js";
 
 // Scene setup
 const scene = new THREE.Scene();
@@ -22,6 +23,14 @@ renderer.setSize(WIDTH, HEIGHT);
 renderer.setPixelRatio(1); // Force 1:1 pixel ratio for performance
 renderer.shadowMap.enabled = false; // Disable shadows for better performance
 container.appendChild(renderer.domElement);
+
+// FPS Stats for debugging
+const stats = new Stats();
+stats.showPanel(0); // 0: fps, 1: ms, 2: mb
+stats.dom.style.position = 'absolute';
+stats.dom.style.top = '0px';
+stats.dom.style.left = '0px';
+document.body.appendChild(stats.dom);
 
 // BOILER ROOM LIGHTING - Heavy red atmosphere like the photo
 // Very dim ambient with red tint
@@ -461,6 +470,8 @@ audioLoader.load("/song.mp3", (buffer) => {
 // Animation loop
 const clock = new THREE.Clock();
 function animate() {
+  stats.begin(); // Start FPS monitoring
+
   requestAnimationFrame(animate);
   const delta = clock.getDelta();
   const time = clock.getElapsedTime();
@@ -485,6 +496,8 @@ function animate() {
 
   controls.update();
   renderer.render(scene, camera);
+
+  stats.end(); // End FPS monitoring
 }
 animate();
 
