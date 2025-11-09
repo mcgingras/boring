@@ -470,7 +470,7 @@ function detectMusic() {
 
   // Threshold: if average volume > 20, consider it music
   // Adjust this value based on your environment (20-50 typical range)
-  return average > 40;
+  return average > 100;
 }
 
 // Start microphone when page loads
