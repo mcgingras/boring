@@ -5,8 +5,8 @@ import Stats from "three/examples/jsm/libs/stats.module.js";
 
 // Scene setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0000); // Very dark with red tint
-// scene.fog = new THREE.Fog(0x220000, 3, 12); // Disabled for Pi performance
+scene.background = new THREE.Color(0x0a0000); // Very dark with red tint - Pi optimized
+// Fog disabled for Pi performance
 
 const container = document.getElementById("container");
 const WIDTH = 1280;
@@ -143,7 +143,50 @@ scene.add(floor);
 // floor.rotation.x = -Math.PI / 2;
 // scene.add(floor);
 
-// === DJ BOOTH, WALLS, LOGO - COMMENTED OUT FOR TESTING ===
+// === SKIP DJ BOOTH FOR PERFORMANCE ===
+
+// === BOILER ROOM LOGO - Bring back for aesthetic ===
+const logoRadius = 0.4;
+const logoCanvas = document.createElement('canvas');
+logoCanvas.width = logoCanvas.height = 256;
+const logoCtx = logoCanvas.getContext('2d');
+logoCtx.fillStyle = '#ff0000';
+logoCtx.beginPath();
+logoCtx.arc(128, 128, 128, 0, Math.PI * 2);
+logoCtx.fill();
+logoCtx.fillStyle = '#ffffff';
+logoCtx.textAlign = 'center';
+logoCtx.textBaseline = 'middle';
+logoCtx.font = 'bold 32px Arial';
+logoCtx.fillText('BOILER', 128, 108);
+logoCtx.fillText('ROOM', 128, 148);
+const logoTexture = new THREE.CanvasTexture(logoCanvas);
+const logoGeo = new THREE.CircleGeometry(logoRadius, 32);
+const logoMat = new THREE.MeshBasicMaterial({ map: logoTexture });
+const logo = new THREE.Mesh(logoGeo, logoMat);
+logo.position.set(0, 3, -3.5);
+scene.add(logo);
+
+// === SIMPLE BACK WALL ===
+const backWallGeo = new THREE.PlaneGeometry(8, 5);
+const backWallMat = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
+const backWall = new THREE.Mesh(backWallGeo, backWallMat);
+backWall.position.set(0, 2.5, -3.5);
+scene.add(backWall);
+
+// === RED LED STRIPS - Emissive only ===
+const ledStripPositions = [-2, -0.7, 0.7, 2];
+ledStripPositions.forEach((xPos) => {
+  const stripGeo = new THREE.PlaneGeometry(0.08, 3.5);
+  const stripMat = new THREE.MeshBasicMaterial({
+    color: 0xff0000,
+  });
+  const strip = new THREE.Mesh(stripGeo, stripMat);
+  strip.position.set(xPos, 2, -3.4);
+  scene.add(strip);
+});
+
+// === DJ BOOTH, WALLS - COMMENTED OUT FOR PERFORMANCE ===
 /*
 // DJ BOOTH - Boiler Room style
 const boothWidth = 2;
