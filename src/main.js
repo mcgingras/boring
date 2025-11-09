@@ -431,6 +431,8 @@ let audioContext;
 let analyser;
 let micStream;
 let isMusicPlaying = false;
+let silenceStartTime = null; // Track when silence started
+const SILENCE_THRESHOLD = 5000; // 5 seconds in milliseconds
 
 async function setupMicrophone() {
   try {
@@ -574,22 +576,37 @@ function animate() {
 
   // Detect music from microphone
   const musicDetected = detectMusic();
+  const currentTime = Date.now();
 
-  // Control animations based on music detection
-  if (musicDetected && !isMusicPlaying) {
-    // Music just started - resume animations
-    console.log("Music detected! Dancing...");
-    mixers.forEach((mixer) => {
-      mixer.timeScale = 1; // Normal speed
-    });
-    isMusicPlaying = true;
-  } else if (!musicDetected && isMusicPlaying) {
-    // Music stopped - pause animations
-    console.log("Music stopped. Pausing...");
-    mixers.forEach((mixer) => {
-      mixer.timeScale = 0; // Pause by setting time scale to 0
-    });
-    isMusicPlaying = false;
+  // Control animations based on music detection with 5-second delay
+  if (musicDetected) {
+    // Music is playing - reset silence timer
+    silenceStartTime = null;
+
+    if (!isMusicPlaying) {
+      // Music just started - resume animations
+      console.log("Music detected! Dancing...");
+      mixers.forEach((mixer) => {
+        mixer.timeScale = 1; // Normal speed
+      });
+      isMusicPlaying = true;
+    }
+  } else if (isMusicPlaying) {
+    // No music detected and currently dancing
+    if (silenceStartTime === null) {
+      // Just became silent - start the timer
+      silenceStartTime = currentTime;
+      console.log("Silence detected, waiting 5 seconds...");
+    } else if (currentTime - silenceStartTime >= SILENCE_THRESHOLD) {
+      // Been silent for 5+ seconds - stop dancing
+      console.log("5 seconds of silence. Pausing...");
+      mixers.forEach((mixer) => {
+        mixer.timeScale = 0; // Pause by setting time scale to 0
+      });
+      isMusicPlaying = false;
+      silenceStartTime = null;
+    }
+    // else: still within 5 second window, keep dancing
   }
 
   // Update all animation mixers (will pause if timeScale = 0)
