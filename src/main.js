@@ -32,11 +32,25 @@ stats.dom.style.top = '0px';
 stats.dom.style.left = '0px';
 document.body.appendChild(stats.dom);
 
-// === PERFORMANCE TEST MODE ===
-// Minimal lighting for baseline FPS test
-const ambient = new THREE.AmbientLight(0xffffff, 1);
+// === PI-OPTIMIZED BOILER ROOM LIGHTING ===
+// Red-tinted ambient for atmosphere
+const ambient = new THREE.AmbientLight(0x330000, 0.8);
 scene.add(ambient);
 const spotlights = [];
+
+// ONE main red spotlight (simplified)
+const mainRedLight = new THREE.SpotLight(0xff0000, 10, 15, Math.PI / 4, 0.6, 1.5);
+mainRedLight.position.set(0, 4.5, -2);
+mainRedLight.target.position.set(0, 1, 1);
+scene.add(mainRedLight);
+scene.add(mainRedLight.target);
+
+// ONE white spotlight on dancers
+const whiteSpot = new THREE.SpotLight(0xffffff, 15, 12, Math.PI / 6, 0.4, 1.5);
+whiteSpot.position.set(0, 4.5, 2);
+whiteSpot.target.position.set(0, 1, 0);
+scene.add(whiteSpot);
+scene.add(whiteSpot.target);
 
 // === BOILER ROOM LIGHTING - COMMENTED OUT FOR TESTING ===
 // // Very dim ambient with red tint
@@ -421,8 +435,10 @@ function loadCrowdMember(modelPath, position, rotation = 0) {
   );
 }
 
-// === PERFORMANCE TEST - SINGLE DANCER ===
-loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [0, 0, 0], 0);
+// === PI-OPTIMIZED CROWD - 3 dancers ===
+loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [-0.8, 0, 1.5], 0);
+loadCrowdMember("/biped/Animation_Boom_Dance_withSkin.glb", [0, 0, 1.5], 0);
+loadCrowdMember("/biped/Untitled.glb", [0.8, 0, 1.5], 0);
 
 // === CROWD - COMMENTED OUT FOR TESTING ===
 // loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [-1.2, 0, 2], 0);
