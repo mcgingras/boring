@@ -15,47 +15,47 @@ camera.position.set(0, 1.2, 5);
 
 const renderer = new THREE.WebGLRenderer({
   antialias: false,
-  powerPreference: "high-performance"
+  powerPreference: "high-performance",
 });
 renderer.setSize(WIDTH, HEIGHT);
 renderer.setPixelRatio(1); // Force 1:1 pixel ratio for performance
 renderer.shadowMap.enabled = false; // Disable shadows for better performance
 container.appendChild(renderer.domElement);
 
-// Lights
-const ambient = new THREE.AmbientLight(0xffffff, 0.3);
-scene.add(ambient);
+// Lights - TEMPORARILY DISABLED FOR DEBUGGING
+// const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+// scene.add(ambient);
 
 // Reduced spotlights for better performance on Raspberry Pi
 const spotlights = [];
-const spotlightColors = [0xff00ff, 0x00ffff, 0xff0000];
-const spotlightPositions = [
-  [2, 4, 2],
-  [-2, 4, 2],
-  [0, 4, -2],
-];
+// const spotlightColors = [0xff00ff, 0x00ffff, 0xff0000];
+// const spotlightPositions = [
+//   [2, 4, 2],
+//   [-2, 4, 2],
+//   [0, 4, -2],
+// ];
 
-spotlightPositions.forEach((pos, i) => {
-  const spot = new THREE.SpotLight(
-    spotlightColors[i],
-    3,
-    12,
-    Math.PI / 5,
-    0.4,
-    2
-  );
-  spot.position.set(pos[0], pos[1], pos[2]);
-  spot.castShadow = false; // Disable shadows for performance
-  scene.add(spot);
+// spotlightPositions.forEach((pos, i) => {
+//   const spot = new THREE.SpotLight(
+//     spotlightColors[i],
+//     3,
+//     12,
+//     Math.PI / 5,
+//     0.4,
+//     2
+//   );
+//   spot.position.set(pos[0], pos[1], pos[2]);
+//   spot.castShadow = false; // Disable shadows for performance
+//   scene.add(spot);
 
-  // Add target helpers (invisible points the lights aim at)
-  const target = new THREE.Object3D();
-  target.position.set(0, 0, 0);
-  scene.add(target);
-  spot.target = target;
+//   // Add target helpers (invisible points the lights aim at)
+//   const target = new THREE.Object3D();
+//   target.position.set(0, 0, 0);
+//   scene.add(target);
+//   spot.target = target;
 
-  spotlights.push({ light: spot, target: target, phase: (i * Math.PI) / 3 });
-});
+//   spotlights.push({ light: spot, target: target, phase: (i * Math.PI) / 3 });
+// });
 
 // Dance floor with simplified checkered pattern
 const floorGeo = new THREE.PlaneGeometry(10, 10);
@@ -109,11 +109,11 @@ for (let i = 0; i < 3; i++) {
   scene.add(strip);
   neonStrips.push(strip);
 
-  // Reduced point light intensity for performance
-  const pointLight = new THREE.PointLight(neonColors[i], 1.5, 6);
-  pointLight.position.set(0, 1 + i * 0.8, -4.5);
-  scene.add(pointLight);
-  neonLights.push(pointLight);
+  // Reduced point light intensity for performance - TEMPORARILY DISABLED FOR DEBUGGING
+  // const pointLight = new THREE.PointLight(neonColors[i], 1.5, 6);
+  // pointLight.position.set(0, 1 + i * 0.8, -4.5);
+  // scene.add(pointLight);
+  // neonLights.push(pointLight);
 }
 
 // Side walls
@@ -149,11 +149,14 @@ const mixers = [];
 function setupDancerMaterials(model) {
   model.traverse((child) => {
     if (child.isMesh) {
-      // Simplified material properties for better performance
+      // Convert to MeshBasicMaterial for consistent brightness without lights
       if (child.material) {
-        child.material.metalness = 0;
-        child.material.roughness = 1;
-        child.material.needsUpdate = true;
+        const oldMaterial = child.material;
+        child.material = new THREE.MeshBasicMaterial({
+          color: oldMaterial.color || 0xffffff,
+          map: oldMaterial.map,
+          skinning: true, // Important for animated characters
+        });
       }
     }
   });
@@ -203,7 +206,7 @@ loader.load(
 
 // Load right dancer - All Night Dance
 loader.load(
-  "/biped/Animation_All_Night_Dance_withSkin.glb",
+  "/biped/Untitled.glb",
   (gltf) => {
     const model = gltf.scene;
     setupDancerMaterials(model);
@@ -247,27 +250,27 @@ function animate() {
   // Rotate disco ball
   discoBall.rotation.y += delta * 0.5;
 
-  // Animate spotlights in circular patterns
-  spotlights.forEach((spotlight, i) => {
-    const radius = 2;
-    const speed = 0.3 + i * 0.1;
-    spotlight.target.position.x =
-      Math.cos(time * speed + spotlight.phase) * radius;
-    spotlight.target.position.z =
-      Math.sin(time * speed + spotlight.phase) * radius;
-    spotlight.target.position.y = 0.5;
+  // Animate spotlights in circular patterns - TEMPORARILY DISABLED FOR DEBUGGING
+  // spotlights.forEach((spotlight, i) => {
+  //   const radius = 2;
+  //   const speed = 0.3 + i * 0.1;
+  //   spotlight.target.position.x =
+  //     Math.cos(time * speed + spotlight.phase) * radius;
+  //   spotlight.target.position.z =
+  //     Math.sin(time * speed + spotlight.phase) * radius;
+  //   spotlight.target.position.y = 0.5;
 
-    // Pulse intensity
-    const intensity = 2 + Math.sin(time * 2 + spotlight.phase) * 1;
-    spotlight.light.intensity = intensity;
-  });
+  //   // Pulse intensity
+  //   const intensity = 2 + Math.sin(time * 2 + spotlight.phase) * 1;
+  //   spotlight.light.intensity = intensity;
+  // });
 
-  // Pulse neon lights only (strips use MeshBasicMaterial now)
-  neonLights.forEach((light, i) => {
-    const pulse = Math.sin(time * 3 + (i * Math.PI) / 3) * 0.5 + 1.5;
-    // Sync point light intensity with pulse
-    light.intensity = pulse;
-  });
+  // Pulse neon lights only (strips use MeshBasicMaterial now) - TEMPORARILY DISABLED FOR DEBUGGING
+  // neonLights.forEach((light, i) => {
+  //   const pulse = Math.sin(time * 3 + (i * Math.PI) / 3) * 0.5 + 1.5;
+  //   // Sync point light intensity with pulse
+  //   light.intensity = pulse;
+  // });
 
   controls.update();
   renderer.render(scene, camera);
