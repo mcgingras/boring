@@ -6,7 +6,7 @@ import Stats from "three/examples/jsm/libs/stats.module.js";
 // Scene setup
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0000); // Very dark with red tint
-scene.fog = new THREE.Fog(0x220000, 3, 12); // Red-tinted fog for atmosphere
+// scene.fog = new THREE.Fog(0x220000, 3, 12); // Disabled for Pi performance
 
 const container = document.getElementById("container");
 const WIDTH = 1280;
@@ -50,7 +50,7 @@ mainRedLight.target = redTarget;
 scene.add(mainRedLight);
 spotlights.push({ light: mainRedLight, target: redTarget, phase: 0 });
 
-// Side red wash (left) - MUCH BRIGHTER
+// Side red wash (left) - reduced for performance
 const leftRedLight = new THREE.SpotLight(
   0xff0000,
   12,
@@ -71,26 +71,7 @@ spotlights.push({
   phase: Math.PI / 2,
 });
 
-// Right red wash for balance
-const rightRedLight = new THREE.SpotLight(
-  0xff0000,
-  12,
-  12,
-  Math.PI / 3,
-  0.7,
-  1.5
-);
-rightRedLight.position.set(4, 3, 0);
-const rightTarget = new THREE.Object3D();
-rightTarget.position.set(0, 1, 1);
-scene.add(rightTarget);
-rightRedLight.target = rightTarget;
-scene.add(rightRedLight);
-spotlights.push({
-  light: rightRedLight,
-  target: rightTarget,
-  phase: Math.PI / 2,
-});
+// Right red wash REMOVED for Pi performance
 
 // White spotlight on DJ booth - like in the photo
 const djSpotlight = new THREE.SpotLight(
@@ -351,10 +332,10 @@ const glowRing = new THREE.Mesh(glowRingGeo, glowRingMat);
 glowRing.position.set(2.5, 3.5, -3.98);
 scene.add(glowRing);
 
-// VERTICAL RED LED STRIPS - Like in Boiler Room photo
+// VERTICAL RED LED STRIPS - Like in Boiler Room photo (emissive only, no point lights for performance)
 const ledStripPositions = [-3, -1.5, 1.5, 3]; // 4 vertical strips
 ledStripPositions.forEach((xPos) => {
-  // LED strip geometry
+  // LED strip geometry - emissive material only
   const stripGeo = new THREE.PlaneGeometry(0.08, 4);
   const stripMat = new THREE.MeshStandardMaterial({
     color: 0xff0000,
@@ -364,11 +345,6 @@ ledStripPositions.forEach((xPos) => {
   const strip = new THREE.Mesh(stripGeo, stripMat);
   strip.position.set(xPos, 2.5, -3.95);
   scene.add(strip);
-
-  // Add point light for each LED strip for glow effect
-  const ledLight = new THREE.PointLight(0xff0000, 3, 6);
-  ledLight.position.set(xPos, 2.5, -3.5);
-  scene.add(ledLight);
 });
 
 // Controls - damping disabled for performance
@@ -422,38 +398,12 @@ function loadCrowdMember(modelPath, position, rotation = 0) {
   );
 }
 
-// Crowd arranged in semi-circle behind DJ booth
-// Back row
-loadCrowdMember(
-  "/biped/Animation_All_Night_Dance_withSkin.glb",
-  [-1.5, 0, 2],
-  0
-);
-loadCrowdMember("/biped/Animation_Boom_Dance_withSkin.glb", [-0.5, 0, 2], 0);
-loadCrowdMember("/biped/Untitled.glb", [0.5, 0, 2], 0);
-loadCrowdMember(
-  "/biped/Animation_All_Night_Dance_withSkin.glb",
-  [1.5, 0, 2],
-  0
-);
-
-// Middle row (closer to DJ, angled inward)
-loadCrowdMember(
-  "/biped/Animation_Boom_Dance_withSkin.glb",
-  [-2, 0, 1.2],
-  Math.PI / 8
-);
-loadCrowdMember("/biped/Untitled.glb", [-1, 0, 1.2], 0);
-loadCrowdMember(
-  "/biped/Animation_All_Night_Dance_withSkin.glb",
-  [1, 0, 1.2],
-  0
-);
-loadCrowdMember(
-  "/biped/Animation_Boom_Dance_withSkin.glb",
-  [2, 0, 1.2],
-  -Math.PI / 8
-);
+// Crowd arranged in semi-circle behind DJ booth - REDUCED FOR PERFORMANCE
+// Just 4 dancers instead of 8
+loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [-1.2, 0, 2], 0);
+loadCrowdMember("/biped/Animation_Boom_Dance_withSkin.glb", [-0.4, 0, 2], 0);
+loadCrowdMember("/biped/Untitled.glb", [0.4, 0, 2], 0);
+loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [1.2, 0, 2], 0);
 
 // Music (optional)
 const listener = new THREE.AudioListener();
@@ -479,20 +429,17 @@ function animate() {
   // Update all animation mixers
   mixers.forEach((mixer) => mixer.update(delta));
 
-  // Animate stage spotlights - Boiler Room style
-  spotlights.forEach((spotlight, i) => {
-    // Subtle movement
-    const radius = 0.5;
-    const speed = 0.2 + i * 0.1;
-    spotlight.target.position.x =
-      Math.cos(time * speed + spotlight.phase) * radius;
-    spotlight.target.position.z =
-      1 + Math.sin(time * speed + spotlight.phase) * radius;
-
-    // Gentle pulse
-    const intensity = 1.5 + Math.sin(time * 1.5 + spotlight.phase) * 0.5;
-    spotlight.light.intensity = intensity;
-  });
+  // Spotlight animations DISABLED for Pi performance
+  // spotlights.forEach((spotlight, i) => {
+  //   const radius = 0.5;
+  //   const speed = 0.2 + i * 0.1;
+  //   spotlight.target.position.x =
+  //     Math.cos(time * speed + spotlight.phase) * radius;
+  //   spotlight.target.position.z =
+  //     1 + Math.sin(time * speed + spotlight.phase) * radius;
+  //   const intensity = 1.5 + Math.sin(time * 1.5 + spotlight.phase) * 0.5;
+  //   spotlight.light.intensity = intensity;
+  // });
 
   controls.update();
   renderer.render(scene, camera);
