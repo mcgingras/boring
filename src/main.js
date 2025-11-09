@@ -27,9 +27,9 @@ container.appendChild(renderer.domElement);
 // FPS Stats for debugging
 const stats = new Stats();
 stats.showPanel(0); // 0: fps, 1: ms, 2: mb
-stats.dom.style.position = 'absolute';
-stats.dom.style.top = '0px';
-stats.dom.style.left = '0px';
+stats.dom.style.position = "absolute";
+stats.dom.style.top = "0px";
+stats.dom.style.left = "0px";
 document.body.appendChild(stats.dom);
 
 // === PI-OPTIMIZED BOILER ROOM LIGHTING ===
@@ -39,7 +39,14 @@ scene.add(ambient);
 const spotlights = [];
 
 // ONE main red spotlight (simplified)
-const mainRedLight = new THREE.SpotLight(0xff0000, 10, 15, Math.PI / 4, 0.6, 1.5);
+const mainRedLight = new THREE.SpotLight(
+  0xff0000,
+  10,
+  15,
+  Math.PI / 4,
+  0.6,
+  1.5
+);
 mainRedLight.position.set(0, 4.5, -2);
 mainRedLight.target.position.set(0, 1, 1);
 scene.add(mainRedLight);
@@ -147,19 +154,19 @@ scene.add(floor);
 
 // === BOILER ROOM LOGO - Bring back for aesthetic ===
 const logoRadius = 0.4;
-const logoCanvas = document.createElement('canvas');
+const logoCanvas = document.createElement("canvas");
 logoCanvas.width = logoCanvas.height = 256;
-const logoCtx = logoCanvas.getContext('2d');
-logoCtx.fillStyle = '#ff0000';
+const logoCtx = logoCanvas.getContext("2d");
+logoCtx.fillStyle = "#ff0000";
 logoCtx.beginPath();
 logoCtx.arc(128, 128, 128, 0, Math.PI * 2);
 logoCtx.fill();
-logoCtx.fillStyle = '#ffffff';
-logoCtx.textAlign = 'center';
-logoCtx.textBaseline = 'middle';
-logoCtx.font = 'bold 32px Arial';
-logoCtx.fillText('BOILER', 128, 108);
-logoCtx.fillText('ROOM', 128, 148);
+logoCtx.fillStyle = "#ffffff";
+logoCtx.textAlign = "center";
+logoCtx.textBaseline = "middle";
+logoCtx.font = "bold 32px Arial";
+logoCtx.fillText("BOILER", 128, 108);
+logoCtx.fillText("ROOM", 128, 148);
 const logoTexture = new THREE.CanvasTexture(logoCanvas);
 const logoGeo = new THREE.CircleGeometry(logoRadius, 32);
 const logoMat = new THREE.MeshBasicMaterial({ map: logoTexture });
@@ -419,6 +426,56 @@ controls.enableDamping = false;
 const loader = new GLTFLoader();
 const mixers = [];
 
+// === MICROPHONE AUDIO DETECTION ===
+let audioContext;
+let analyser;
+let micStream;
+let isMusicPlaying = false;
+
+async function setupMicrophone() {
+  try {
+    // Get microphone access
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    micStream = stream;
+
+    // Create audio context and analyser
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+
+    // Connect microphone to analyser
+    const source = audioContext.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    console.log("Microphone connected!");
+  } catch (error) {
+    console.error("Microphone access denied:", error);
+  }
+}
+
+// Detect if music is playing based on audio volume
+function detectMusic() {
+  if (!analyser) return false;
+
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  analyser.getByteFrequencyData(dataArray);
+
+  // Calculate average volume
+  let sum = 0;
+  for (let i = 0; i < bufferLength; i++) {
+    sum += dataArray[i];
+  }
+  const average = sum / bufferLength;
+
+  // Threshold: if average volume > 20, consider it music
+  // Adjust this value based on your environment (20-50 typical range)
+  return average > 10;
+}
+
+// Start microphone when page loads
+setupMicrophone();
+
 // Helper function to setup dancer materials - PERFORMANCE TEST MODE
 function setupDancerMaterials(model) {
   model.traverse((child) => {
@@ -471,6 +528,7 @@ function loadCrowdMember(modelPath, position, rotation = 0) {
         const action = mixer.clipAction(gltf.animations[0]);
         action.play();
       }
+      mixer.timeScale = 0; // Start paused - will animate when music detected
       mixers.push(mixer);
     },
     undefined,
@@ -479,7 +537,11 @@ function loadCrowdMember(modelPath, position, rotation = 0) {
 }
 
 // === PI-OPTIMIZED CROWD - 3 dancers ===
-loadCrowdMember("/biped/Animation_All_Night_Dance_withSkin.glb", [-0.8, 0, 1.5], 0);
+loadCrowdMember(
+  "/biped/Animation_All_Night_Dance_withSkin.glb",
+  [-0.8, 0, 1.5],
+  0
+);
 loadCrowdMember("/biped/Animation_Boom_Dance_withSkin.glb", [0, 0, 1.5], 0);
 loadCrowdMember("/biped/Untitled.glb", [0.8, 0, 1.5], 0);
 
@@ -510,7 +572,27 @@ function animate() {
   const delta = clock.getDelta();
   const time = clock.getElapsedTime();
 
-  // Update all animation mixers
+  // Detect music from microphone
+  const musicDetected = detectMusic();
+
+  // Control animations based on music detection
+  if (musicDetected && !isMusicPlaying) {
+    // Music just started - resume animations
+    console.log("Music detected! Dancing...");
+    mixers.forEach((mixer) => {
+      mixer.timeScale = 1; // Normal speed
+    });
+    isMusicPlaying = true;
+  } else if (!musicDetected && isMusicPlaying) {
+    // Music stopped - pause animations
+    console.log("Music stopped. Pausing...");
+    mixers.forEach((mixer) => {
+      mixer.timeScale = 0; // Pause by setting time scale to 0
+    });
+    isMusicPlaying = false;
+  }
+
+  // Update all animation mixers (will pause if timeScale = 0)
   mixers.forEach((mixer) => mixer.update(delta));
 
   // Spotlight animations DISABLED for Pi performance
